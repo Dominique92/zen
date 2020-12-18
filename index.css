@@ -1,0 +1,36 @@
+html, body {
+	height : 100%;
+	margin: 0;
+	background: black;
+	color: white;
+}
+#boot {
+	position: absolute;
+	z-index: 10;
+	top: 0;
+	left: 0;
+	margin: 0;
+	height : 100vh;
+	width : 100vw;
+	background: #432;
+	text-align: center;
+	font-size: 5vw;
+	text-decoration: none;
+	color: white;
+	cursor: pointer;
+}
+#boot p:first-child {
+	padding-top: calc(50vh - 7em);
+	margin: 0;
+}
+#icone {
+	height : 100vh;
+	width : 100vw;
+}
+img {
+	height: 30%;
+	width: 30%;
+	position: absolute;
+	top: 35%;
+	left: 35%;
+}
