@@ -15,7 +15,6 @@ html, body {
 	background: #432;
 	text-align: center;
 	font-size: 5vw;
-	text-decoration: none;
 	color: white;
 	cursor: pointer;
 }
@@ -30,6 +29,13 @@ html, body {
 img {
 	height: 30%;
 	width: 30%;
+}
+#icone p {
+	padding-top: calc(50vh - 7em);
+	text-align: center;
+	font-size: 5vw;
+}
+#icone img {
 	position: absolute;
 	top: 35%;
 	left: 35%;

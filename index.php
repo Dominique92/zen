@@ -64,15 +64,15 @@
 </head>
 
 <body>
-	<a id="boot" onclick="init(this)">
+	<a id="boot">
 		<p>Allongez-vous dans un endroit calme</p>
-		<p>Mettez un casque</p>
-		<p>Cliquez ou touchez l'écran</p>
-		<p>Posez le mobile sur votre ventre</p>
+		<p>Utilisez des écouteurs</p>
+		<img src="<?=$base_path?>start.svg" onclick="init()" />
 	</a>
 
-	<div id="icone" onclick="location.reload()">
-		<img src="<?=$base_path?>icon.svg" />
+	<div id="icone">
+		<p>Posez le mobile sur votre ventre</p>
+		<img src="<?=$base_path?>stop.svg" onclick="location.reload()" />
 	<div>
 
 	<div id="trace"></div>

@@ -15,8 +15,10 @@ if (window.screen.width == window.outerWidth) { // Si mobile
 var date, // Lancement du programme
 	body = document.getElementsByTagName('body')[0];
 
-function init(el) {
-	el.style.display = 'none';
+function init() {
+	const el = document.getElementById('boot');
+	if (el)
+		el.style.display = 'none';
 
 	if (window.screen.width == window.outerWidth) { // Si mobile
 		if (body.requestFullscreen)
