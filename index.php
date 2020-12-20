@@ -64,17 +64,21 @@
 </head>
 
 <body>
-	<a id="boot">
+	<div>
 		<p>Allongez-vous dans un endroit calme</p>
 		<p>Utilisez des écouteurs</p>
-		<img src="<?=$base_path?>start.svg" onclick="init()" />
-	</a>
-
-	<div id="icone">
-		<p>Posez le mobile sur votre ventre</p>
-		<img src="<?=$base_path?>stop.svg" onclick="location.reload()" />
+	</div>
 	<div>
+		<p class="mobile">Posez le mobile sur votre abdomen</p>
+	</div>
+
+	<a onclick="flip()"><img id="flip" src="<?=$base_path?>start.svg" /></a>
 
 	<div id="trace"></div>
+
+	<div class="copyright">
+		<p>Aucune information n'est mémorisée ni transmise.</p>
+		<p>&copy <a href="https://github.com/Dominique92/zen">Dominique Cavailhez 2020</a></p>
+	</div>
 </body>
 </html>

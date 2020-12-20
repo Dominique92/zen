@@ -1,45 +1,39 @@
-// DEBUG
-var trace = 0;
 /* jshint esversion: 6 */
-if (window.screen.width == window.outerWidth) { // Si mobile
-	window.addEventListener('error', function(evt) {
-		alert('ERROR ' + evt.filename + ' ' + evt.lineno + ':' + evt.colno + '\n' + evt.message);
-	});
+if (window.DeviceOrientationEvent && 'ontouchstart' in window) { // Si mobile
+	document.body.classList.add('is-mobile');
+
 	console.log = function(message) {
-		alert('CONSOLE ' + message);
+		alert(message);
 	};
 }
 
 //****************************************************************
 // Ecran d'accueil, activations nécéssitant une action utilisateur
 var date, // Lancement du programme
-	body = document.getElementsByTagName('body')[0];
+	audioContext;
 
-function init() {
-	const el = document.getElementById('boot');
-	if (el)
-		el.style.display = 'none';
-
-	if (window.screen.width == window.outerWidth) { // Si mobile
-		if (body.requestFullscreen)
-			body.requestFullscreen();
-		if (body.msRequestFullscreen)
-			body.msRequestFullscreen();
-		if (body.webkitRequestFullscreen)
-			body.webkitRequestFullscreen();
+function flip() {
+	const flipImg = document.getElementById('flip');
+	if (!audioContext) {
+		document.body.classList.add('run');
+		flipImg.src = flipImg.src.replace('start', 'stop');
+		date = Date.now(); // Lancement du programme
+		audioContext = new(window.AudioContext || window.webkitAudioContext)();
+		randomSound(true);
+	} else {
+		flipImg.src = flipImg.src.replace('stop', 'start');
+		document.body.classList.remove('run');
+		audioContext.close();
+		audioContext = null;
 	}
-
-	date = Date.now(); // Lancement du programme
-	randomSound();
-	setInterval(randomSound, 1000);
 }
 
 //**********************
-// Mesure de la rotation
+// Mesure de l'orientation (angle dans l'espace)
 var deviceOrientation = {},
 	lastOrientation = {};
 
-// Actualise la position quand elle change
+// Actualise l'orientation quand elle change
 window.addEventListener('deviceorientation', function(evt) {
 	deviceOrientation = evt;
 });
@@ -52,8 +46,8 @@ function derive(k) {
 		Math.abs(dor);
 }
 
-// Récupère la rotation depuis la dernière fois (en °)
-function deltaRotation() {
+// Récupère l'oriention depuis la dernière fois (en °)
+function deltaOrientation() {
 	const r = Math.hypot(Math.hypot(derive('alpha'), derive('beta')), derive('gamma'));
 	lastOrientation = deviceOrientation;
 	return r;
@@ -65,9 +59,9 @@ const delai = 8, // (secondes) entre chaque changement de son
 	ems_r = 0.1 / delai, // Probabilité d'échanger main/second au repos (secondes)
 	es_c = 0.2 / delai, // Probabilité d'échanger second au repos et calme
 	ps_ms = 0.2, // Probabilité de diffuser le second
-	r_bc = 0.05, // Limite basse rotation au calme
-	r_hc = 3, // Limite haute rotation au calme
-	r_ha = 15; // Limite haute rotation agitée
+	r_bc = 0.05, // Limite basse orientation au calme
+	r_hc = 3, // Limite haute orientation au calme
+	r_ha = 15; // Limite haute orientation agitée
 
 var main = 'champs',
 	second = 'foret',
@@ -78,43 +72,49 @@ var main = 'champs',
 for (let i in liaisons)
 	liaisons[i] = Array.from(new Set(liaisons[i]));
 
-function randomSound() {
-	const rotation = deltaRotation(),
-		// Probabilité d'échanger main/second
-		p_ms = Math.max(ems_r * (1 - rotation / r_bc), (rotation - r_hc) / (r_ha - r_hc)),
-		// Probabilité d'échanger second
-		p_es = Math.max(es_c, (rotation - r_hc) / (r_ha - r_hc));
+setInterval(randomSound, 1000);
 
-	// Echange main/second
-	if (Math.random() < p_ms && Date.now() - date > 15000) {
-		const tmp = main;
-		main = second;
-		second = tmp;
-		compteur = delai; // On change le son tout de suite
+function randomSound(reset) {
+	if (audioContext) {
+		if (reset)
+			compteur = delai; // On change le son tout de suite
+
+		const orientation = deltaOrientation(),
+			// Probabilité d'échanger main/second
+			p_ms = Math.max(ems_r * (1 - orientation / r_bc), (orientation - r_hc) / (r_ha - r_hc)),
+			// Probabilité d'échanger second
+			p_es = Math.max(es_c, (orientation - r_hc) / (r_ha - r_hc));
+
+		// Echange main/second
+		if (Math.random() < p_ms && Date.now() - date > 15000) {
+			const tmp = main;
+			main = second;
+			second = tmp;
+			compteur = delai; // On change le son tout de suite
+		}
+
+		// Randomisation du second
+		if (Math.random() < p_es && Date.now() - date > 30000)
+			second = randomArray(liaisons[main]);
+
+		// Choix du son diffusé (main/second)
+		if (compteur++ >= delai) {
+			const nom = Math.random() > ps_ms ? main : second;
+			son = randomArray(sons[nom]);
+			mp3(son);
+			compteur = 0;
+		}
+		const traceTag = document.getElementById('trace');
+		if (0 && traceTag)
+			traceTag.innerHTML = [
+				main,
+				second,
+				son,
+				'orientation ' + orientation,
+				'p_ms ' + p_ms,
+				'p_es ' + p_es,
+			].join('<br/>');
 	}
-
-	// Randomisation du second
-	if (Math.random() < p_es && Date.now() - date > 30000)
-		second = randomArray(liaisons[main]);
-
-	// Choix du son diffusé (main/second)
-	if (compteur++ >= delai) {
-		const nom = Math.random() > ps_ms ? main : second;
-		son = randomArray(sons[nom]);
-		mp3(son);
-		compteur = 0;
-	}
-	const traceTag = document.getElementById('trace');
-	if (trace && traceTag)
-		//	trace.innerHTML = deltaRotation (); 
-		traceTag.innerHTML = [
-			main,
-			second,
-			son,
-			'rotation ' + rotation,
-			'p_ms ' + p_ms,
-			'p_es ' + p_es,
-		].join('<br/>');
 }
 
 function randomArray(a) {
@@ -123,8 +123,6 @@ function randomArray(a) {
 
 // Joue un fichier MP3
 //TODO entrée et sortie progressive
-const audioContext = new(window.AudioContext || window.webkitAudioContext)();
-
 function mp3(file) {
 	const source = audioContext.createBufferSource(),
 		panner = audioContext.createPanner();
