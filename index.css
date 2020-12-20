@@ -1,10 +1,12 @@
 html, body {
-	height : 100%;
 	margin: 0;
 	background: #432;
-	color: white;
+	color: #ffd700;
 }
 
+a { /* remove link hilight in chrome when pressed */
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+}
 img {
 	position: absolute;
 	top: 35%;
@@ -31,10 +33,10 @@ p {
 	bottom: 0;
 	width: 100%;
 	text-align: right;
-	text-decoration: none;
 	font-size: small;
 }
 .copyright a:link,
 .copyright a:visited {
-	color: white;
+	color: #ffd700;
+	text-decoration: none;
 }
