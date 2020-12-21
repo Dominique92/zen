@@ -9,19 +9,17 @@ if (window.DeviceOrientationEvent && 'ontouchstart' in window) { // Si mobile
 
 //****************************************************************
 // Ecran d'accueil, activations nécéssitant une action utilisateur
-var date, // Lancement du programme
-	audioContext;
+const bouton_el = document.getElementById('bouton');
+var audioContext;
 
 function flip() {
-	const flipImg = document.getElementById('flip');
 	if (!audioContext) {
 		document.body.classList.add('run');
-		flipImg.src = flipImg.src.replace('start', 'stop');
-		date = Date.now(); // Lancement du programme
+		bouton_el.src = bouton_el.src.replace('start', 'stop');
 		audioContext = new(window.AudioContext || window.webkitAudioContext)();
 		randomSound(true);
 	} else {
-		flipImg.src = flipImg.src.replace('stop', 'start');
+		bouton_el.src = bouton_el.src.replace('stop', 'start');
 		document.body.classList.remove('run');
 		audioContext.close();
 		audioContext = null;
@@ -61,11 +59,13 @@ const delai = 8, // (secondes) entre chaque changement de son
 	ps_ms = 0.2, // Probabilité de diffuser le second
 	r_bc = 0.05, // Limite basse orientation au calme
 	r_hc = 3, // Limite haute orientation au calme
-	r_ha = 15; // Limite haute orientation agitée
+	r_ha = 15, // Limite haute orientation agitée
+	traceTag = document.getElementById('trace');
 
 var main = 'champs',
 	second = 'foret',
 	son = randomArray(sons[main]),
+	date, // du lancement des sons
 	compteur = delai;
 
 // Enlève les doublons
@@ -76,8 +76,10 @@ setInterval(randomSound, 1000);
 
 function randomSound(reset) {
 	if (audioContext) {
-		if (reset)
+		if (reset) {
+			date = Date.now(); // Lancement du programme
 			compteur = delai; // On change le son tout de suite
+		}
 
 		const orientation = deltaOrientation(),
 			// Probabilité d'échanger main/second
@@ -103,17 +105,21 @@ function randomSound(reset) {
 			son = randomArray(sons[nom]);
 			mp3(son);
 			compteur = 0;
+
+			// Trace
+			if (traceTag)
+				traceTag.innerHTML = [
+					main,
+					second,
+					(son.match('([a-z-]+)\\\.'))[1],
+					/*
+					son,
+					'orientation ' + orientation,
+					'p_ms ' + p_ms,
+					'p_es ' + p_es,
+					*/
+				].join('<br/>');
 		}
-		const traceTag = document.getElementById('trace');
-		if (0 && traceTag)
-			traceTag.innerHTML = [
-				main,
-				second,
-				son,
-				'orientation ' + orientation,
-				'p_ms ' + p_ms,
-				'p_es ' + p_es,
-			].join('<br/>');
 	}
 }
 

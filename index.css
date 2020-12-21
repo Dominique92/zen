@@ -21,6 +21,7 @@ p {
 }
 
 .mobile,
+.is-mobile .pc,
 .run div {
 	display: none;
 }

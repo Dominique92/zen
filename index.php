@@ -12,30 +12,30 @@
 	// Calculate relative paths between the requested url & the ZEN package directory
 	$dir = pathinfo ($_SERVER['SCRIPT_FILENAME'], PATHINFO_DIRNAME);
 	$base_path = str_replace ($dir.'/', '', str_replace ('\\', '/', __DIR__).'/');
-	$script = $base_path .pathinfo ($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME);
+	$base_sons = isset ($dir_sons) ? $dir_sons : $base_path;
 
 	$js = [];
-	foreach (glob ($base_path.'*', GLOB_ONLYDIR ) AS $filename) {
+	foreach (glob ($base_sons.'*', GLOB_ONLYDIR ) AS $filename) {
 		preg_match('/([a-z]+)$/', $filename, $m);
 		if ($m) {
 			$js[] = "sons.{$m[1]} = [];";
 			$js[] = "liaisons.{$m[1]} = [];";
 		}
 	}
-	foreach (glob ($base_path.'*/*.mp3') AS $filename) {
+	foreach (glob ($base_sons.'*/*.mp3') AS $filename) {
 		preg_match('/([a-z]+)\/([a-z ]+\.mp3)/', $filename, $m);
 		if ($m)
 			$js[] = "sons.{$m[1]}.push('$filename');";
 	}
-	foreach (glob($base_path.'*/*.txt') as $filename) {
+	foreach (glob($base_sons.'*/*.txt') as $filename) {
 		preg_match('/([a-z ]+)\/[a-z ]+\.txt/', $filename, $rep);
 		preg_match_all('/([a-z]+)[ |\.]/', $filename, $files);
 
 		if ($files && $rep)
 			foreach ($files[1] AS $f) {
-				if (!is_dir($base_path.$f))
+				if (!is_dir($base_sons.$f))
 					echo "<p>Répertoire <u>$f</u> inexistant dans $filename</p>";
-				if (!is_dir($base_path.$rep[1]))
+				if (!is_dir($base_sons.$rep[1]))
 					echo "<p>Répertoire <u>{$rep[1]}</u> inexistant dans $filename</p>";
 				$js[] = "liaisons.{$rep[1]}.push('$f');";
 				$js[] = "liaisons.$f.push('{$rep[1]}');";
@@ -49,12 +49,12 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-	<title>ZEN</title>
+	<title>zen</title>
 	<link rel="shortcut icon" type="image/svg+xml" href="<?=$base_path?>icon.svg" />
 	<link rel="icon" rel="alternate" type="image/png" href="<?=$base_path?>icon.png">
 
-	<link href="<?=$script?>.css?<?=filesize($script.'.css')?>" rel="stylesheet">
-	<script src="<?=$script?>.js?<?=filesize($script.'.js')?>" defer></script>
+	<link href="<?=$base_path?>index.css?<?=filesize($base_path.'index.css')?>" rel="stylesheet">
+	<script src="<?=$base_path?>index.js?<?=filesize($base_path.'index.js')?>" defer></script>
 	<script>
 		// Définition des sons
 		var sons = [],
@@ -65,17 +65,18 @@
 
 <body>
 	<div>
-		<p>Allongez-vous dans un endroit calme</p>
-		<p>Utilisez des écouteurs</p>
-	</div>
-	<div>
+		<p class="pc">Utiliser de préférence avec un smartphone</p>
+		<p class="pc">Pour une ambiance sonore, cliquez sur le bouton</p>
+
+		<p class="mobile">Allongez-vous dans un endroit calme</p>
+		<p class="mobile">Utilisez des écouteurs</p>
 		<p class="mobile">Posez le mobile sur votre abdomen</p>
 	</div>
 
 	<a><img src="<?=$base_path?>stop.svg" /></a>
-	<a onclick="flip()"><img id="flip" src="<?=$base_path?>start.svg" /></a>
+	<a onclick="flip()"><img id="bouton" src="<?=$base_path?>start.svg" /></a>
 
-	<div id="trace"></div>
+	<p id="trace"></p>
 
 	<div class="copyright">
 		<p>Aucune information n'est mémorisée ni transmise</p>
