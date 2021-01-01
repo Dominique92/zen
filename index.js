@@ -160,16 +160,20 @@ function mp3(file) {
 			source.start();
 			gainNode.gain.linearRampToValueAtTime(
 				1,
-				audioContext.currentTime + audioBuffer.duration / 20
+				Math.max(2, // max ramp up 2 seconds
+					audioContext.currentTime + audioBuffer.duration / 20)
 			);
 
 			// Ramp down over last 10% of time
-			setInterval(function() {
-				gainNode.gain.linearRampToValueAtTime(
+			setTimeout(function() {
+				this.gainNode.gain.linearRampToValueAtTime(
 					0,
-					audioContext.currentTime + audioBuffer.duration / 10
+					audioContext.currentTime + this.audioBuffer.duration / 10
 				);
-			}, audioBuffer.duration * 850);
+			}.bind({ // Locally use values of this source
+				audioBuffer: audioBuffer,
+				gainNode: gainNode,
+			}), audioBuffer.duration * 900);
 		});
 	return source;
 }
