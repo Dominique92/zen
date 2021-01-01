@@ -128,17 +128,23 @@ function randomArray(a) {
 }
 
 // Joue un fichier MP3
-//TODO entrée et sortie progressive
 function mp3(file) {
+	// Declare audio nodes
 	const source = audioContext.createBufferSource(),
-		panner = audioContext.createPanner();
-	panner.connect(audioContext.destination);
-	source.connect(panner);
+		panner = audioContext.createPanner(),
+		gainNode = audioContext.createGain();
 
+	// Connect nodes
+	source.connect(panner);
+	panner.connect(gainNode);
+	gainNode.connect(audioContext.destination);
+
+	// Set position
 	const angle = Math.random() * 2 * Math.PI;
 	panner.setPosition(Math.sin(angle), 0, Math.cos(angle));
-	//	panner.setPosition(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+	// panner.setPosition(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
 
+	// Load the file
 	window.fetch(file)
 		.then(function(response) {
 			return response.arrayBuffer();
@@ -148,7 +154,22 @@ function mp3(file) {
 		})
 		.then(function(audioBuffer) {
 			source.buffer = audioBuffer;
+
+			// Ramp up over 5% of the duration
+			gainNode.gain.value = 0;
 			source.start();
+			gainNode.gain.linearRampToValueAtTime(
+				1,
+				audioContext.currentTime + audioBuffer.duration / 20
+			);
+
+			// Ramp down over last 10% of time
+			setInterval(function() {
+				gainNode.gain.linearRampToValueAtTime(
+					0,
+					audioContext.currentTime + audioBuffer.duration / 10
+				);
+			}, audioBuffer.duration * 850);
 		});
 	return source;
 }
