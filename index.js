@@ -53,73 +53,69 @@ function deltaOrientation() {
 
 //*******************
 // Diffusion des sons
-const delai = 8, // (secondes) entre chaque changement de son
-	ems_r = 0.1 / delai, // Probabilité d'échanger main/second au repos (secondes)
-	es_c = 0.2 / delai, // Probabilité d'échanger second au repos et calme
-	ps_ms = 0.2, // Probabilité de diffuser le second
-	r_bc = 0.05, // Limite basse orientation au calme
-	r_hc = 3, // Limite haute orientation au calme
-	r_ha = 15, // Limite haute orientation agitée
-	traceTag = document.getElementById('trace');
-
-var main = 'champs',
-	second = 'foret',
-	son = randomArray(sons[main]),
-	date, // du lancement des sons
-	compteur = delai;
 
 // Enlève les doublons
 for (let i in liaisons)
 	liaisons[i] = Array.from(new Set(liaisons[i]));
 
+// Delta d'orientation (angle ° par seconde)
+const doCalme = 0.05, // Sur un corps inerte / détendu
+	doActif = 0.5, // Mobile qui bouge
+
+	// Délais en secondes 
+	tCalme = 15, // Entre les changements de son, posé sur un support fixe
+	inactif = 15, // Non sensibilité aux mouvements au début
+
+	// Probibilités
+	permutMain = 0.1, // Probibilité d'échanger le premier et le second lors de chaque émission de son
+	permutMainMax = 0.2, // Probibilité max d'échanger le premier et le second
+	sonMainSecond = 0.2, // Probabilité de diffuser le second
+
+	// Elements HTML
+	traceTag = document.getElementById('trace');
+
+// Valeurs variables
+var main = 'champs',
+	second = 'foret',
+	son = randomArray(sons[main]),
+	dateDebut; // Du lancement des sons
+
 setInterval(randomSound, 1000);
 
 function randomSound(reset) {
+	if (reset)
+		dateDebut = Date.now(); // Du lancement du programme
+
 	if (audioContext) {
-		if (reset) {
-			date = Date.now(); // Lancement du programme
-			compteur = delai; // On change le son tout de suite
-		}
-
 		const orientation = deltaOrientation(),
-			// Probabilité d'échanger main/second
-			p_ms = Math.max(ems_r * (1 - orientation / r_bc), (orientation - r_hc) / (r_ha - r_hc)),
-			// Probabilité d'échanger second
-			p_es = Math.max(es_c, (orientation - r_hc) / (r_ha - r_hc));
-
-		// Echange main/second
-		if (Math.random() < p_ms && Date.now() - date > 15000) {
-			const tmp = main;
-			main = second;
-			second = tmp;
-			compteur = delai; // On change le son tout de suite
-		}
-
-		// Randomisation du second
-		if (Math.random() < p_es && Date.now() - date > 30000)
-			second = randomArray(liaisons[main]);
+			probChange = Math.max(
+				(1 - orientation / doCalme) / tCalme,
+				1 - doActif / orientation
+			);
 
 		// Choix du son diffusé (main/second)
-		if (compteur++ >= delai) {
-			const nom = Math.random() > ps_ms ? main : second;
+		if (Math.random() < Math.min(probChange, permutMainMax) || reset) {
+			const nom = Math.random() > sonMainSecond ? main : second;
 			son = randomArray(sons[nom]);
 			mp3(son);
-			compteur = 0;
 
-			// Trace
-			if (traceTag)
-				traceTag.innerHTML = [
-					main,
-					second,
-					(son.match('([a-z-]+)\\\.'))[1],
-					/*
-					son,
-					'orientation ' + orientation,
-					'p_ms ' + p_ms,
-					'p_es ' + p_es,
-					*/
-				].join('<br/>');
+			// Echange main/second
+			if (Math.random() < permutMain &&
+				Date.now() - dateDebut > inactif * 1000) {
+				main = second;
+				second = randomArray(liaisons[main]);
+			}
 		}
+
+		// Trace
+		if (traceTag)
+			traceTag.innerHTML = [
+				main,
+				second,
+				(son.match('([a-z-]+)\\\.'))[1],
+				//'orientation ' + orientation,
+				Math.max(0, probChange),
+			].join('<br/>');
 	}
 }
 
