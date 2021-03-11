@@ -65,12 +65,14 @@
 
 <body>
 	<div>
-		<p class="pc">Utiliser de préférence avec un smartphone</p>
-		<p class="pc">Pour une ambiance sonore, cliquez sur le bouton</p>
-
-		<p class="mobile">Allongez-vous dans un endroit calme</p>
-		<p class="mobile">Utilisez des écouteurs</p>
-		<p class="mobile">Posez le mobile sur votre abdomen</p>
+		<p>Zen diffuse des sons apaisants pour méditer ou s'endormir.</p>
+		<p class="pc">A utiliser de préférence avec un smartphone et des écouteurs.</p>
+		<p class="mobile">Utilisez de préférence avec des écouteurs,</p>
+		<p class="mobile">allongez-vous dans un endroit calme,</p>
+		<p class="mobile">posez le mobile sur votre abdomen</p>
+		<p class="mobile">et cliquez sur le bouton.</p>
+		<p class="mobile">Ecoutez Zen s'adapter à votre respiration ou à vos mouvements.</p>
+		<p>Aucune information n'est mémorisée ni transmise.</p>
 	</div>
 
 	<a><img src="<?=$base_path?>stop.svg" /></a>
@@ -79,7 +81,6 @@
 	<p id="trace"></p>
 
 	<div class="copyright">
-		<p>Aucune information n'est mémorisée ni transmise</p>
 		<p>&copy <a href="https://github.com/Dominique92/zen">Dominique Cavailhez 2020</a></p>
 	</div>
 </body>

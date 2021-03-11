@@ -12,7 +12,7 @@ if (window.DeviceOrientationEvent && 'ontouchstart' in window) {
 }
 
 //****************************************************************
-// Ecran d'accueil, activations nécéssitant une action utilisateur
+// Home screen, activations requiring a user action
 const bouton_el = document.getElementById('bouton');
 var audioContext;
 
@@ -57,18 +57,17 @@ function deltaOrientation() {
 
 //*******************
 // Diffusion des sons
-
-// Enlève les doublons
-for (let i in liaisons)
-	liaisons[i] = Array.from(new Set(liaisons[i]));
-
-// Valeurs variables
 var traceEl = document.getElementById('trace'),
 	mainSoundCategory = 'foret', // Nom de la catégorie de sons jouée
 	secondSoundCategory = 'champs', // Nom de la catégorie de sons en attente
 	currentSoundName = randomArray(sons[mainSoundCategory]), // Initialisation du premier son
 	dateDebut, // Du lancement des sons
 	buffers = []; // List of end playing sounds date
+
+
+// Enlève les doublons
+for (let i in liaisons)
+	liaisons[i] = Array.from(new Set(liaisons[i]));
 
 setInterval(randomSound, 1000);
 
@@ -81,7 +80,9 @@ function randomSound(reset) {
 		// Fliter & count the active sounds
 		buffers = buffers.filter(b => b > Date.now());
 
-		let movement = deltaOrientation(), // Delta orientation from last measure
+		let movement = Date.now() < dateDebut + 15 * 1000 ? // Insensitive to movements the first 15 seconds
+			0 :
+			deltaOrientation(), // Delta orientation from last measure
 			soundNbObjective = movement < 0.05 ? 1 : movement; // If stay motionless, always play one sound
 
 		// Add one sound
@@ -95,7 +96,7 @@ function randomSound(reset) {
 		if (Math.random() < movement * movement / 30 + 0.1) {
 			const exmsc = mainSoundCategory;
 			mainSoundCategory = secondSoundCategory;
-			secondSoundCategory = Math.random() < .3 ?
+			secondSoundCategory = Math.random() < 0.3 ?
 				secondSoundCategory = randomArray(liaisons[mainSoundCategory]) :
 				exmsc;
 		}
@@ -116,7 +117,8 @@ function randomArray(a) {
 	return a[Math.floor(Math.random() * a.length)];
 }
 
-// Joue un fichier MP3
+// Play a MP3 file
+//TODO loop on background sounds
 function playMp3(fileName) {
 	// Declare audio nodes
 	const source = audioContext.createBufferSource(),
@@ -129,7 +131,7 @@ function playMp3(fileName) {
 	gainNode.connect(audioContext.destination);
 
 	// Set random position
-	panner.setPosition(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1); // Sur un volume
+	panner.setPosition(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1); // Sur une shère
 
 	// Load the file
 	window.fetch(fileName)
@@ -140,29 +142,19 @@ function playMp3(fileName) {
 			return audioContext.decodeAudioData(arrayBuffer);
 		})
 		.then(function(audioBuffer) {
+			// Connect the audioBuffer to the source
 			source.buffer = audioBuffer;
-			buffers.push(Date.now() + audioBuffer.duration * 1000);
 
-			// Ramp up over 5% of the duration
-			gainNode.gain.value = 0;
+			//Play the sounds following the curve
 			source.start();
-			gainNode.gain.linearRampToValueAtTime(
-				Math.random() * 2, // Random distance
-				Math.max(
-					2, // max ramp up 2 seconds
-					audioContext.currentTime + audioBuffer.duration / 20
-				)
+			gainNode.gain.setValueCurveAtTime(
+				[0, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.75, 0.5, 0],
+				audioContext.currentTime,
+				audioBuffer.duration
 			);
 
-			// Ramp down over last 10% of duration
-			setTimeout(function() {
-				this.gainNode.gain.linearRampToValueAtTime(
-					0,
-					audioContext.currentTime + this.audioBuffer.duration / 10
-				);
-			}.bind({ // Locally use values of this source
-				audioBuffer: audioBuffer,
-				gainNode: gainNode,
-			}), audioBuffer.duration * 900);
+			// Trace currently available sounds
+			//TODO trace list of sounds names
+			buffers.push(Date.now() + audioBuffer.duration * 1000);
 		});
 }
